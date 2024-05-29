@@ -1,7 +1,8 @@
 import nodemailer from "nodemailer"
 
 export const sendEmail = async (email: string) => {
-  var transporter = nodemailer.createTransport({
+  const transporter = nodemailer.createTransport({
+    name: "localhost",
     service: "gmail",
     auth: {
       user: "loejstarc@gmail.com",
@@ -10,7 +11,7 @@ export const sendEmail = async (email: string) => {
   })
 
   var mailOptions = {
-    from: "loejstarc@gmail.com",
+    from: "morton.abernathy@ethereal.email",
     to: email,
     subject: "OpenChat Account Verification",
     text: `Click the link to verify your account:`,

@@ -1,5 +1,6 @@
-import express from "express"
-import session from "express-session"
+import express, { Express } from "express"
+import { Server } from "socket.io"
+import http, { METHODS } from "http"
 import cors from "cors"
 import dotenv from "dotenv"
 import cookieParser from "cookie-parser"
@@ -8,28 +9,31 @@ import sequelize from "./Models/postgres"
 import router from "./Routes/AuthRoutes"
 import Users from "./Models/User"
 import { cookie } from "./Utils/cookie"
+import SocketController from "./Controllers/SocketController"
 
-const app = express()
 dotenv.config()
+const app: Express = express()
+
 app.use(express.json())
 app.use(cookieParser())
 app.use(
   cors({
     origin: "http://localhost:5173",
     credentials: true,
+    methods: ["GET", "POST"],
   })
 )
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "secret",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: true,
-      sameSite: "none",
-    },
-  })
-)
+
+// Socket.io setup
+const server = http.createServer(app)
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
+  },
+})
+
+new SocketController(io)
 
 // Connect to the database
 sequelize
@@ -52,6 +56,10 @@ app.get("/verify", async (req, res) => {
 })
 
 const PORT = process.env.PORT
-app.listen(PORT, () => {
+/* app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`)
+}) */
+
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)
 })
